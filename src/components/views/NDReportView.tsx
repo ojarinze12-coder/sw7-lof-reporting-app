@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import ReportTable from './common/ReportTable';
 import SummaryGenerator from './common/SummaryGenerator';
 import EventReportForm from './common/EventReportForm';
+import BarChart from './common/BarChart';
 
 interface NDReportViewProps {
   ndName: string;
@@ -63,8 +64,19 @@ const NDReportView: React.FC<NDReportViewProps> = ({ ndName, ndId }) => {
   };
 
   if (!data) {
-    return <Card><p>No data available for {ndName} in the selected period.</p></Card>;
+     return (
+        <div>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">National Director Dashboard</h2>
+            <p className="text-lg text-slate-600 mb-6">Welcome, <span className="font-semibold">{ndName}</span></p>
+            <Card><p>No data available for {ndName} in the selected period.</p></Card>
+        </div>
+    );
   }
+
+  const chartData = REPORT_FIELDS.map(field => ({
+      name: FIELD_LABELS[field].replace(' (₦)', ''),
+      value: data[field],
+  }));
 
   return (
     <div className="space-y-6">
@@ -75,11 +87,11 @@ const NDReportView: React.FC<NDReportViewProps> = ({ ndName, ndId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
                 <label htmlFor="start-date" className="block text-sm font-medium text-slate-700">From</label>
-                <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
+                <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="input" />
             </div>
             <div>
                 <label htmlFor="end-date" className="block text-sm font-medium text-slate-700">To</label>
-                <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
+                <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
             </div>
             <div className="flex items-center h-10">
                 <input id="compare-checkbox-nd" type="checkbox" checked={isComparing} onChange={(e) => setIsComparing(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"/>
@@ -87,6 +99,10 @@ const NDReportView: React.FC<NDReportViewProps> = ({ ndName, ndId }) => {
             </div>
             <Button onClick={handleExport} variant="secondary">Export Summary (CSV)</Button>
         </div>
+      </Card>
+
+      <Card>
+          <BarChart data={chartData} title="Performance Overview" />
       </Card>
 
        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

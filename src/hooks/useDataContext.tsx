@@ -1,5 +1,3 @@
-
-
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District, EventType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
@@ -217,7 +215,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (userToUpdate: User) => {
     setUsers(prev => prev.map(u => {
         if (u.id === userToUpdate.id) {
-            // Preserve the existing password unless a new one is provided.
+            // Preserve the existing password unless a new, non-empty one is provided.
             const passwordToSet = (userToUpdate.password && userToUpdate.password.length > 0)
                 ? userToUpdate.password
                 : u.password;
@@ -229,7 +227,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return u;
     }));
   };
-
   const addUser = createAdder(setUsers);
   const deleteUser = createDeleter(setUsers);
   const updateChapter = createUpdater(setChapters);
