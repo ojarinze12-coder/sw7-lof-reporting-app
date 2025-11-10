@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District, EventType } from '../types';
+import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const LOCAL_STORAGE_KEY = 'fgbmfiLofReportingData';
@@ -189,24 +189,32 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [users]);
   
   const changePassword = useCallback((userId: string, currentPassword?: string, newPassword?: string): { success: boolean, message: string } => {
-    const user = users.find(u => u.id === userId);
+    setUsers(prevUsers => {
+        const userIndex = prevUsers.findIndex(u => u.id === userId);
+        if (userIndex === -1) return prevUsers;
+        
+        const user = prevUsers[userIndex];
+        if (!newPassword || newPassword.length < 1) {
+            // This case should be handled by form validation, but as a safeguard.
+            return prevUsers; 
+        }
+        if (user.password !== currentPassword) {
+            // This check should also be in the component to provide immediate feedback.
+            return prevUsers;
+        }
 
-    if (!user) {
-      return { success: false, message: "User not found." };
-    }
-    if (user.password !== currentPassword) {
-      return { success: false, message: "Current password does not match." };
-    }
-    if (!newPassword || newPassword.length < 6) {
-        return { success: false, message: "New password must be at least 6 characters." };
-    }
+        const updatedUsers = [...prevUsers];
+        updatedUsers[userIndex] = { ...user, password: newPassword };
+        return updatedUsers;
+    });
+    // The success/message logic is better handled in the component calling this.
+    // For this implementation, we assume if it reaches here, it's a success for state update.
+    const user = users.find(u => u.id === userId);
+    if (!user) return { success: false, message: "User not found." };
+    if (!newPassword) return { success: false, message: "New password cannot be empty." };
+    if (user.password !== currentPassword) return { success: false, message: "Current password does not match." };
     
-    setUsers(prevUsers => 
-        prevUsers.map(u => 
-            u.id === userId ? { ...u, password: newPassword } : u
-        )
-    );
-    
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, password: newPassword } : u));
     return { success: true, message: "Password updated successfully." };
   }, [users]);
 
@@ -214,21 +222,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (userToUpdate: User) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userToUpdate.id) {
-        // Merge existing user data with new data, preserving fields that weren't submitted.
-        const updatedUser = { ...u, ...userToUpdate };
-
         // Only update the password if a new, non-empty password string is provided.
         // Otherwise, always preserve the existing password.
-        if (!userToUpdate.password || userToUpdate.password.length === 0) {
-          updatedUser.password = u.password;
-        }
+        const newPassword = userToUpdate.password && userToUpdate.password.length > 0
+            ? userToUpdate.password
+            : u.password;
         
-        return updatedUser;
+        return { ...userToUpdate, password: newPassword };
       }
       return u;
     }));
   };
-
   const addUser = createAdder(setUsers);
   const deleteUser = createDeleter(setUsers);
   const updateChapter = createUpdater(setChapters);
