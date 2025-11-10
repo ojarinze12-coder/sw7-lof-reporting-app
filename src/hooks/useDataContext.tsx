@@ -213,7 +213,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [users]);
 
   // CRUD Implementations
-    const updateUser = (userToUpdate: User) => {
+  const updateUser = (userToUpdate: User) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userToUpdate.id) {
         // Preserve the existing password unless a new, non-empty one is provided.

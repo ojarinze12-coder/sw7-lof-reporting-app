@@ -486,5 +486,4 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({ isOpen, onClose, onSa
     );
 };
 
-
 export default AdminView;
