@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District } from '../types';
+import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District, EventType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const LOCAL_STORAGE_KEY = 'fgbmfiLofReportingData';
@@ -194,13 +194,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) {
       return { success: false, message: "User not found." };
     }
-
     if (user.password !== currentPassword) {
       return { success: false, message: "Current password does not match." };
     }
-
     if (!newPassword || newPassword.length < 6) {
-      return { success: false, message: "Password must be at least 6 characters." };
+        return { success: false, message: "New password must be at least 6 characters." };
     }
     
     setUsers(prevUsers => 
@@ -216,18 +214,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (userToUpdate: User) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userToUpdate.id) {
-        // Preserve the existing password unless a new, non-empty one is provided.
-        const passwordToSet = (userToUpdate.password && userToUpdate.password.length > 0)
-            ? userToUpdate.password
-            : u.password;
+        // Merge existing user data with new data, preserving fields that weren't submitted.
+        const updatedUser = { ...u, ...userToUpdate };
+
+        // Only update the password if a new, non-empty password string is provided.
+        // Otherwise, always preserve the existing password.
+        if (!userToUpdate.password || userToUpdate.password.length === 0) {
+          updatedUser.password = u.password;
+        }
         
-        // Create a new object by merging the old user data with the updates
-        const updatedUser = { ...u, ...userToUpdate, password: passwordToSet };
         return updatedUser;
       }
       return u;
     }));
   };
+
   const addUser = createAdder(setUsers);
   const deleteUser = createDeleter(setUsers);
   const updateChapter = createUpdater(setChapters);

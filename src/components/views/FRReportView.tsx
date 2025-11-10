@@ -49,17 +49,8 @@ const FRReportView: React.FC<FRReportViewProps> = ({ frName, frId }) => {
     }
   }, [isComparing, startDate, endDate, frId, getAggregatedData]);
 
-  if (!data) {
-    return (
-        <div>
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">Field Representative Dashboard</h2>
-            <p className="text-lg text-slate-600 mb-6">Welcome, <span className="font-semibold">{frName}</span></p>
-            <Card><p>No data available for {frName} in the selected period.</p></Card>
-        </div>
-    );
-  }
-
   const handleExport = () => {
+    if (!data) return;
     const headers = ["Metric", "Total"];
     const rows = REPORT_FIELDS.map(field => [FIELD_LABELS[field], data[field]]);
     let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
@@ -71,11 +62,11 @@ const FRReportView: React.FC<FRReportViewProps> = ({ frName, frId }) => {
     link.click();
     document.body.removeChild(link);
   };
-
-  const chartData = REPORT_FIELDS.map(field => ({
+  
+  const chartData = data ? REPORT_FIELDS.map(field => ({
       name: FIELD_LABELS[field].replace(' (₦)', ''), // Shorten label for chart
       value: data[field],
-  }));
+  })) : [];
 
   return (
     <div className="space-y-6">
@@ -96,57 +87,63 @@ const FRReportView: React.FC<FRReportViewProps> = ({ frName, frId }) => {
                 <input id="compare-checkbox" type="checkbox" checked={isComparing} onChange={(e) => setIsComparing(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"/>
                 <label htmlFor="compare-checkbox" className="ml-2 block text-sm text-gray-900">Compare Periods</label>
             </div>
-            <Button onClick={handleExport} variant="secondary">Export Summary (CSV)</Button>
+            <Button onClick={handleExport} variant="secondary" disabled={!data}>Export Summary (CSV)</Button>
         </div>
       </Card>
       
-      <Card>
-          <BarChart data={chartData} title="Performance Overview" />
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
+      {!data ? (
+        <Card><p>No data available for {frName} in the selected period to display charts and tables.</p></Card>
+      ) : (
+        <>
           <Card>
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Area Summary (incl. Events)</h3>
-            <ReportTable data={data} level="FR" comparativeData={comparativeData} />
+              <BarChart data={chartData} title="Performance Overview" />
           </Card>
-          <Card>
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Supervised Chapters</h3>
-            {data.children && data.children.length > 0 ? (
-                <ul className="space-y-3">
-                    {data.children.map(chapterData => (
-                        <li key={chapterData.name} className="p-3 bg-slate-50 rounded-md border border-slate-200">
-                            <p className="font-semibold text-slate-700">{chapterData.name}</p>
-                            <p className="text-sm text-slate-500">Attendance: {chapterData.attendance.toLocaleString()} | Salvations: {chapterData.salvations.toLocaleString()}</p>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-slate-500">No chapter data in selected period.</p>
-            )}
-          </Card>
-        </div>
-        <div className="space-y-6">
-          <EventReportForm reportingOfficerId={frId} officerRole={UserRole.FieldRepresentative} />
-          <Card>
-            <h3 className="text-xl font-bold text-slate-800 mb-4">My Submitted Events</h3>
-            {data.events && data.events.length > 0 ? (
-                <ul className="space-y-3 max-h-60 overflow-y-auto">
-                    {data.events.map(event => (
-                        <li key={event.id} className="p-3 bg-slate-50 rounded-md border border-slate-200">
-                            <p className="font-semibold text-slate-700">{event.eventName} <span className="text-xs font-normal bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">{event.eventType}</span></p>
-                            <p className="text-sm text-slate-500">Date: {new Date(event.eventDate).toLocaleDateString()} | Attendance: {event.attendance.toLocaleString()}</p>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-slate-500">You have not submitted any event reports in this period.</p>
-            )}
-           </Card>
-        </div>
-      </div>
 
-      <SummaryGenerator data={data} role={UserRole.FieldRepresentative} name={frName} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <Card>
+                <h3 className="text-xl font-bold text-slate-800 mb-4">Area Summary (incl. Events)</h3>
+                <ReportTable data={data} level="FR" comparativeData={comparativeData} />
+              </Card>
+              <Card>
+                <h3 className="text-xl font-bold text-slate-800 mb-4">Supervised Chapters</h3>
+                {data.children && data.children.length > 0 ? (
+                    <ul className="space-y-3">
+                        {data.children.map(chapterData => (
+                            <li key={chapterData.name} className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                                <p className="font-semibold text-slate-700">{chapterData.name}</p>
+                                <p className="text-sm text-slate-500">Attendance: {chapterData.attendance.toLocaleString()} | Salvations: {chapterData.salvations.toLocaleString()}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-slate-500">No chapter data in selected period.</p>
+                )}
+              </Card>
+            </div>
+            <div className="space-y-6">
+              <EventReportForm reportingOfficerId={frId} officerRole={UserRole.FieldRepresentative} />
+              <Card>
+                <h3 className="text-xl font-bold text-slate-800 mb-4">My Submitted Events</h3>
+                {data.events && data.events.length > 0 ? (
+                    <ul className="space-y-3 max-h-60 overflow-y-auto">
+                        {data.events.map(event => (
+                            <li key={event.id} className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                                <p className="font-semibold text-slate-700">{event.eventName} <span className="text-xs font-normal bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">{event.eventType}</span></p>
+                                <p className="text-sm text-slate-500">Date: {new Date(event.eventDate).toLocaleDateString()} | Attendance: {event.attendance.toLocaleString()}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-slate-500">You have not submitted any event reports in this period.</p>
+                )}
+               </Card>
+            </div>
+          </div>
+
+          <SummaryGenerator data={data} role={UserRole.FieldRepresentative} name={frName} />
+        </>
+      )}
     </div>
   );
 };
