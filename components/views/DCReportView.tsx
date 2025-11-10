@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import { UserRole, AggregatedData } from '../../types';
@@ -73,10 +72,20 @@ const DCReportView: React.FC<DCReportViewProps> = ({ dcName, dcId, isAdminView =
   const welcomeName = isAdminView ? "Admin" : dcName;
   const summaryTitle = isAdminView ? "Overall District Summary" : "My District Summary (incl. Events)";
   
-  const chartData = data ? REPORT_FIELDS.map(field => ({
+  if (!data) {
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">{title}</h2>
+            <p className="text-lg text-slate-600 mb-6">Welcome, <span className="font-semibold">{welcomeName}</span></p>
+            <Card><p>No data available for the selected period.</p></Card>
+        </div>
+    );
+  }
+
+  const chartData = REPORT_FIELDS.map(field => ({
       name: FIELD_LABELS[field].replace(' (₦)', ''),
       value: data[field],
-  })) : [];
+  }));
 
   return (
     <div className="space-y-6">
@@ -87,76 +96,70 @@ const DCReportView: React.FC<DCReportViewProps> = ({ dcName, dcId, isAdminView =
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
                 <label htmlFor="start-date" className="block text-sm font-medium text-slate-700">From</label>
-                <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="input" />
+                <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
             </div>
             <div>
                 <label htmlFor="end-date" className="block text-sm font-medium text-slate-700">To</label>
-                <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
+                <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
             </div>
             <div className="flex items-center h-10">
                 <input id="compare-checkbox-dc" type="checkbox" checked={isComparing} onChange={(e) => setIsComparing(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"/>
                 <label htmlFor="compare-checkbox-dc" className="ml-2 block text-sm text-gray-900">Compare Periods</label>
             </div>
-            <Button onClick={handleExport} variant="secondary" disabled={!data}>Export Summary (CSV)</Button>
+            <Button onClick={handleExport} variant="secondary">Export Summary (CSV)</Button>
         </div>
       </Card>
       
-      {!data ? (
-        <Card><p>No data available for the selected period.</p></Card>
-      ) : (
-        <>
+      <Card>
+          <BarChart data={chartData} title="Performance Overview" />
+      </Card>
+
+      <div className={`grid grid-cols-1 ${!isAdminView ? 'lg:grid-cols-2' : ''} gap-6`}>
+        <div className="space-y-6">
           <Card>
-              <BarChart data={chartData} title="Performance Overview" />
+            <h3 className="text-xl font-bold text-slate-800 mb-4">{summaryTitle}</h3>
+            <ReportTable data={data} level="DC" comparativeData={comparativeData} />
           </Card>
-
-          <div className={`grid grid-cols-1 ${!isAdminView ? 'lg:grid-cols-2' : ''} gap-6`}>
-            <div className="space-y-6">
-              <Card>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">{summaryTitle}</h3>
-                <ReportTable data={data} level="DC" comparativeData={comparativeData} />
-              </Card>
-              <Card>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">{isAdminView ? "Zones" : "Supervised Zones"}</h3>
-                {data.children && data.children.length > 0 ? (
-                    <ul className="space-y-3">
-                        {data.children.map(zoneData => (
-                            <li key={zoneData.name} className="p-3 bg-slate-50 rounded-md border border-slate-200">
-                                <p className="font-semibold text-slate-700">{zoneData.name}</p>
-                                <p className="text-sm text-slate-500">Attendance: {zoneData.attendance.toLocaleString()} | Salvations: {zoneData.salvations.toLocaleString()}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-slate-500">No zone data in selected period.</p>
-                )}
-               </Card>
-            </div>
-
-            {!isAdminView && (
-                <div className="space-y-6">
-                    <EventReportForm reportingOfficerId={dcId} officerRole={UserRole.DistrictCoordinator} />
-                    <Card>
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">My Submitted Events</h3>
-                        {data.events && data.events.length > 0 ? (
-                            <ul className="space-y-3 max-h-60 overflow-y-auto">
-                                {data.events.map(event => (
-                                    <li key={event.id} className="p-3 bg-slate-50 rounded-md border border-slate-200">
-                                        <p className="font-semibold text-slate-700">{event.eventName} <span className="text-xs font-normal bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">{event.eventType}</span></p>
-                                        <p className="text-sm text-slate-500">Date: {new Date(event.eventDate).toLocaleDateString()} | Attendance: {event.attendance.toLocaleString()}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-slate-500">You have not submitted any event reports in this period.</p>
-                        )}
-                    </Card>
-                </div>
+          <Card>
+            <h3 className="text-xl font-bold text-slate-800 mb-4">{isAdminView ? "Zones" : "Supervised Zones"}</h3>
+            {data.children && data.children.length > 0 ? (
+                <ul className="space-y-3">
+                    {data.children.map(zoneData => (
+                        <li key={zoneData.name} className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                            <p className="font-semibold text-slate-700">{zoneData.name}</p>
+                            <p className="text-sm text-slate-500">Attendance: {zoneData.attendance.toLocaleString()} | Salvations: {zoneData.salvations.toLocaleString()}</p>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-slate-500">No zone data in selected period.</p>
             )}
-          </div>
-          
-          <SummaryGenerator data={data} role={role} name={name} />
-        </>
-      )}
+           </Card>
+        </div>
+
+        {!isAdminView && (
+            <div className="space-y-6">
+                <EventReportForm reportingOfficerId={dcId} officerRole={UserRole.DistrictCoordinator} />
+                <Card>
+                    <h3 className="text-xl font-bold text-slate-800 mb-4">My Submitted Events</h3>
+                    {data.events && data.events.length > 0 ? (
+                        <ul className="space-y-3 max-h-60 overflow-y-auto">
+                            {data.events.map(event => (
+                                <li key={event.id} className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                                    <p className="font-semibold text-slate-700">{event.eventName} <span className="text-xs font-normal bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">{event.eventType}</span></p>
+                                    <p className="text-sm text-slate-500">Date: {new Date(event.eventDate).toLocaleDateString()} | Attendance: {event.attendance.toLocaleString()}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-slate-500">You have not submitted any event reports in this period.</p>
+                    )}
+                </Card>
+            </div>
+        )}
+      </div>
+      
+      <SummaryGenerator data={data} role={role} name={name} />
     </div>
   );
 };

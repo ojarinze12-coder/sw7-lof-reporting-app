@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import { ChapterReport, ReportMetric } from '../../types';
@@ -103,7 +102,7 @@ const ChapterPresidentView: React.FC<ChapterPresidentViewProps> = ({ chapterName
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="month" className="block text-sm font-medium text-slate-700">Month</label>
-              <select id="month" value={month} onChange={e => setMonth(Number(e.target.value))} className="input">
+              <select id="month" value={month} onChange={e => setMonth(Number(e.target.value))} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
                 {MONTHS.map((m, i) => (
                   <option key={m} value={i + 1}>{m}</option>
                 ))}
@@ -111,7 +110,7 @@ const ChapterPresidentView: React.FC<ChapterPresidentViewProps> = ({ chapterName
             </div>
             <div>
               <label htmlFor="year" className="block text-sm font-medium text-slate-700">Year</label>
-              <input type="number" id="year" value={year} onChange={e => setYear(Number(e.target.value))} className="input" />
+              <input type="number" id="year" value={year} onChange={e => setYear(Number(e.target.value))} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
             </div>
           </div>
           
@@ -125,7 +124,7 @@ const ChapterPresidentView: React.FC<ChapterPresidentViewProps> = ({ chapterName
                         name={field}
                         value={formData[field]}
                         onChange={handleInputChange}
-                        className="input"
+                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
                         min="0"
                         required
                     />
@@ -149,11 +148,11 @@ const ChapterPresidentView: React.FC<ChapterPresidentViewProps> = ({ chapterName
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div>
                     <label htmlFor="start-date" className="block text-sm font-medium text-slate-700">From</label>
-                    <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="input" />
+                    <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
                 </div>
                 <div>
                     <label htmlFor="end-date" className="block text-sm font-medium text-slate-700">To</label>
-                    <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input" />
+                    <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500" />
                 </div>
                 <Button onClick={handleExport} variant="secondary" disabled={reports.length === 0}>Export Selection</Button>
             </div>

@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District } from '../types';
+import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District, EventType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const LOCAL_STORAGE_KEY = 'fgbmfiLofReportingData';
@@ -189,24 +189,32 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [users]);
   
   const changePassword = useCallback((userId: string, currentPassword?: string, newPassword?: string): { success: boolean, message: string } => {
+    setUsers(prevUsers => {
+        const userIndex = prevUsers.findIndex(u => u.id === userId);
+        if (userIndex === -1) return prevUsers;
+        
+        const user = prevUsers[userIndex];
+        if (!newPassword || newPassword.length < 1) {
+            // This case should be handled by form validation, but as a safeguard.
+            return prevUsers; 
+        }
+        if (user.password !== currentPassword) {
+            // This check should also be in the component to provide immediate feedback.
+            return prevUsers;
+        }
+
+        const updatedUsers = [...prevUsers];
+        updatedUsers[userIndex] = { ...user, password: newPassword };
+        return updatedUsers;
+    });
+    // The success/message logic is better handled in the component calling this.
+    // For this implementation, we assume if it reaches here, it's a success for state update.
     const user = users.find(u => u.id === userId);
-
-    if (!user) {
-        return { success: false, message: "User not found." };
-    }
-    if (user.password !== currentPassword) {
-        return { success: false, message: "Current password does not match." };
-    }
-    if (!newPassword || newPassword.length < 1) {
-        return { success: false, message: "New password cannot be empty." };
-    }
-
-    setUsers(prevUsers => 
-        prevUsers.map(u => 
-            u.id === userId ? { ...u, password: newPassword } : u
-        )
-    );
-
+    if (!user) return { success: false, message: "User not found." };
+    if (!newPassword) return { success: false, message: "New password cannot be empty." };
+    if (user.password !== currentPassword) return { success: false, message: "Current password does not match." };
+    
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, password: newPassword } : u));
     return { success: true, message: "Password updated successfully." };
   }, [users]);
 

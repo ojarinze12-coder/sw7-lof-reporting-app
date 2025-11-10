@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import { UserRole, User, Chapter, Area, Zone, District } from '../../types';
@@ -486,5 +485,27 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({ isOpen, onClose, onSa
         </Modal>
     );
 };
+
+// Add some shared styles for the admin table
+const style = document.createElement('style');
+style.innerHTML = `
+    .th {
+        @apply px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider;
+    }
+    .th-action {
+        @apply px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider;
+    }
+    .td {
+        @apply px-6 py-4 whitespace-nowrap text-sm text-slate-700;
+    }
+    .label {
+        @apply block text-sm font-medium text-slate-700 mb-1;
+    }
+    .input {
+        @apply mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-md shadow-sm;
+    }
+`;
+document.head.appendChild(style);
+
 
 export default AdminView;
