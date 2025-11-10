@@ -212,19 +212,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [users]);
 
   // CRUD Implementations
-  const updateUser = (userToUpdate: User) => {
+    const updateUser = (userToUpdate: User) => {
     setUsers(prev => prev.map(u => {
-        if (u.id === userToUpdate.id) {
-            // Preserve the existing password unless a new, non-empty one is provided.
-            const passwordToSet = (userToUpdate.password && userToUpdate.password.length > 0)
-                ? userToUpdate.password
-                : u.password;
-            
-            // Create a new object by merging the old user data with the updates
-            const updatedUser = { ...u, ...userToUpdate, password: passwordToSet };
-            return updatedUser;
-        }
-        return u;
+      if (u.id === userToUpdate.id) {
+        // Preserve the existing password unless a new, non-empty one is provided.
+        const passwordToSet = (userToUpdate.password && userToUpdate.password.length > 0)
+            ? userToUpdate.password
+            : u.password;
+        
+        // Create a new object by merging the old user data with the updates
+        const updatedUser = { ...u, ...userToUpdate, password: passwordToSet };
+        return updatedUser;
+      }
+      return u;
     }));
   };
   const addUser = createAdder(setUsers);
