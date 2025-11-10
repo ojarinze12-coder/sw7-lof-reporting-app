@@ -49,6 +49,16 @@ const NDReportView: React.FC<NDReportViewProps> = ({ ndName, ndId }) => {
     }
   }, [isComparing, startDate, endDate, ndId, getAggregatedData]);
   
+  if (!data) {
+     return (
+        <div>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">National Director Dashboard</h2>
+            <p className="text-lg text-slate-600 mb-6">Welcome, <span className="font-semibold">{ndName}</span></p>
+            <Card><p>No data available for {ndName} in the selected period.</p></Card>
+        </div>
+    );
+  }
+
   const handleExport = () => {
     if (!data) return;
     const headers = ["Metric", "Total"];
@@ -62,16 +72,6 @@ const NDReportView: React.FC<NDReportViewProps> = ({ ndName, ndId }) => {
     link.click();
     document.body.removeChild(link);
   };
-
-  if (!data) {
-     return (
-        <div>
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">National Director Dashboard</h2>
-            <p className="text-lg text-slate-600 mb-6">Welcome, <span className="font-semibold">{ndName}</span></p>
-            <Card><p>No data available for {ndName} in the selected period.</p></Card>
-        </div>
-    );
-  }
 
   const chartData = REPORT_FIELDS.map(field => ({
       name: FIELD_LABELS[field].replace(' (₦)', ''),

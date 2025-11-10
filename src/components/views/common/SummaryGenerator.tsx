@@ -28,13 +28,15 @@ const SummaryGenerator: React.FC<SummaryGeneratorProps> = ({ data, role, name })
     setError(null);
     setSummaryData(null);
 
-    if (!process.env.API_KEY) {
-      setError("API key is not configured. Please contact the administrator.");
+    const apiKey = process.env.API_KEY;
+
+    if (!apiKey) {
+      setError("API key is not configured. This feature is currently unavailable. Please contact the administrator.");
       setIsLoading(false);
       return;
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     
     const dataString = JSON.stringify(data, (key, value) => 
         (key === 'reports' || key === 'events' || key === 'children') ? undefined : value, 2);
@@ -74,8 +76,13 @@ const SummaryGenerator: React.FC<SummaryGeneratorProps> = ({ data, role, name })
             responseSchema: responseSchema,
         }
       });
-      const parsedSummary = JSON.parse(response.text);
-      setSummaryData(parsedSummary);
+      const responseText = response.text;
+      if (responseText) {
+          const parsedSummary = JSON.parse(responseText);
+          setSummaryData(parsedSummary);
+      } else {
+        throw new Error("Model returned an empty response.");
+      }
     } catch (err) {
       console.error(err);
       setError('An error occurred while generating the summary. The model may have returned an unexpected response. Please try again.');

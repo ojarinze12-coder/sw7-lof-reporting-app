@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District, EventType } from '../types';
+import { ChapterReport, EventReport, UserRole, AggregatedData, User, Chapter, Area, Zone, District } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const LOCAL_STORAGE_KEY = 'fgbmfiLofReportingData';
