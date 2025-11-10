@@ -60,7 +60,6 @@ const FRReportView: React.FC<FRReportViewProps> = ({ frName, frId }) => {
   }
 
   const handleExport = () => {
-    if (!data) return;
     const headers = ["Metric", "Total"];
     const rows = REPORT_FIELDS.map(field => [FIELD_LABELS[field], data[field]]);
     let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
